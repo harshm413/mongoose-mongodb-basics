@@ -169,9 +169,45 @@ async function leaning() {
         .lean();
 }
 
+async function grouping() {
+    return await post.aggregate([
+        {
+            $match: { likes: { $gt: 12 } },
+        },
+        {
+            $group: { _id: '$authorId', total: { $sum: 1 } },
+        },
+        {
+            $sort: { _id: -1 },
+        },
+    ]);
+}
+
+async function lookingUp() {
+    return await user.aggregate([
+        {
+            $lookup: {
+                from: 'posts',
+                localField: 'id',
+                foreignField: 'authorId',
+                as: 'POSTS',
+            },
+        },
+        {
+            $project: {
+                _id: false,
+                id: true,
+                username: true,
+                subscribers: true,
+                POSTS: true,
+            },
+        },
+    ]);
+}
+
 async function main() {
     //use function here
-    const result = await leaning();
+    const result = await lookingUp();
     console.log(result);
 }
 
